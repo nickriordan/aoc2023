@@ -5,34 +5,16 @@ fun main() {
         }
 
     fun part2(input: List<String>): Int {
-        val lookup = mapOf(
-            "zero" to 0,
-            "one" to 1,
-            "two" to 2,
-            "three" to 3,
-            "four" to 4,
-            "five" to 5,
-            "six" to 6,
-            "seven" to 7,
-            "eight" to 8,
-            "nine" to 9,
-            "0" to 0,
-            "1" to 1,
-            "2" to 2,
-            "3" to 3,
-            "4" to 4,
-            "5" to 5,
-            "6" to 6,
-            "7" to 7,
-            "8" to 8,
-            "9" to 9
+        val lookup = listOf(
+            "zero", "0", "one", "1", "two", "2", "three", "3", "four", "4",
+            "five", "5", "six", "6", "seven", "7", "eight", "8", "nine", "9"
         )
-
-        val reversedLookup = lookup.map { it.key.reversed() to it.value }.toMap()
+        val matchFirst = "(zero|one|two|three|four|five|six|seven|eight|nine|\\d).*".toRegex()
+        val matchLast = ".*(zero|one|two|three|four|five|six|seven|eight|nine|\\d)".toRegex()
 
         return input.sumOf { line ->
-            (lookup[line.findAnyOf(lookup.keys)!!.second]!! * 10) +
-                    reversedLookup[line.reversed().findAnyOf(reversedLookup.keys)!!.second]!!
+            matchLast.find(line)!!.groupValues[1].let { lookup.indexOf(it) / 2 } +
+                    matchFirst.find(line)!!.groupValues[1].let { (lookup.indexOf(it) / 2) * 10 }
         }
     }
 
