@@ -2,22 +2,15 @@ fun main() {
     data class Turn(val red: Int, val green: Int, val blue: Int)
     data class Game(val id: Int, val turns: List<Turn>)
 
-    fun valueOf(s: String) = s.takeIf { it.all { c -> c.isDigit() } }?.toInt() ?: 0
+    fun extract(col: String, s: String) = s.substringBefore(col).trim().split(' ').last().toIntOrNull() ?: 0
 
-    fun gameData(input: List<String>)  =
+    fun gameData(input: List<String>) =
         input.map { line ->
-            line.split(":").let { (game, rest) ->
-                val id = game.drop(5).toInt()
-                val turns = rest.split(';').let { s ->
-                    s.map { turn ->
-                        Turn(
-                            red = valueOf(turn.substringBefore("red").trim().split(' ').last()),
-                            green = valueOf(turn.substringBefore("green").trim().split(' ').last()),
-                            blue = valueOf(turn.substringBefore("blue").trim().split(' ').last())
-                        )
-                    }
-                }
-                Game(id, turns)
+            line.split(":").let { (gameAndId, turnsInfo) ->
+                Game(id = gameAndId.drop(5).toInt(),
+                    turns = turnsInfo.split(';').let { s ->
+                        s.map { Turn(extract("red", it), extract("green", it), extract("blue", it)) }
+                    })
             }
         }
 
