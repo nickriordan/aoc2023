@@ -2,20 +2,18 @@ fun main() {
     data class Turn(val red: Int, val green: Int, val blue: Int)
     data class Game(val id: Int, val turns: List<Turn>)
 
-    val regexRed = "(\\d+) red".toRegex()
-    val regexBlue = "(\\d+) blue".toRegex()
-    val regexGreen = "(\\d+) green".toRegex()
+    fun valueOf(s: String) = s.takeIf { it.all { c -> c.isDigit() } }?.toInt() ?: 0
 
-    fun gameData(input: List<String>) =
+    fun gameData(input: List<String>)  =
         input.map { line ->
             line.split(":").let { (game, rest) ->
                 val id = game.drop(5).toInt()
                 val turns = rest.split(';').let { s ->
                     s.map { turn ->
                         Turn(
-                            red = regexRed.find(turn)?.groupValues?.get(1)?.toInt() ?: 0,
-                            green = regexGreen.find(turn)?.groupValues?.get(1)?.toInt() ?: 0,
-                            blue = regexBlue.find(turn)?.groupValues?.get(1)?.toInt() ?: 0
+                            red = valueOf(turn.substringBefore("red").trim().split(' ').last()),
+                            green = valueOf(turn.substringBefore("green").trim().split(' ').last()),
+                            blue = valueOf(turn.substringBefore("blue").trim().split(' ').last())
                         )
                     }
                 }
@@ -29,7 +27,7 @@ fun main() {
         }.sumOf { it.id }
 
     fun part2(input: List<String>) =
-        gameData(input).sumOf {g ->
+        gameData(input).sumOf { g ->
             g.turns.maxOf { it.red } * g.turns.maxOf { it.green } * g.turns.maxOf { it.blue }
         }
 
