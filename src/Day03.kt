@@ -1,7 +1,6 @@
 fun main() {
-    data class PartNumber(val xRange: IntRange, val y: Int, val partNumber: Int) {
-        fun isAdjacentTo(x: Int, y: Int) =
-            y >= (this.y - 1) && y <= (this.y + 1) && x >= (this.xRange.first - 1) && x <= (this.xRange.last + 1)
+    data class PartNumber(val xRange: IntRange, val yRange: IntRange, val partNumber: Int) {
+        fun isAdjacentTo(x: Int, y: Int) = x in xRange && y in yRange
     }
 
     data class Part(val x: Int, val y: Int, val symbol: Char) {
@@ -10,9 +9,13 @@ fun main() {
 
     data class Schematic(val parts: List<Part> = emptyList(), val partNumbers: List<PartNumber> = emptyList()) {
         fun addNumber(x: Int, y: Int, s: String) =
-            Schematic(parts, partNumbers + PartNumber((x..<x + s.length), y, s.toInt()))
+            Schematic(parts, partNumbers + PartNumber((x - 1..x + s.length), y - 1..y + 1, s.toInt()))
 
         fun addPart(x: Int, y: Int, symbol: Char) = Schematic(parts + Part(x, y, symbol), partNumbers)
+
+        fun gears() = parts.filter { it.isGear() }
+
+        fun partsAdjacentTo(x: Int, y: Int) = partNumbers.filter { partNumber -> partNumber.isAdjacentTo(x, y) }
     }
 
     fun readLine(remaining: String, x: Int, y: Int, schematic: Schematic): Schematic =
@@ -42,12 +45,8 @@ fun main() {
     }
 
     fun part2(input: List<String>) = readSchematic(input).let { schematic ->
-        schematic.parts.filter {
-            it.isGear()
-        }.map { part ->
-            schematic.partNumbers.filter {
-                partNumber -> partNumber.isAdjacentTo(part.x, part.y)
-            }.map { it.partNumber }
+        schematic.gears().map { part ->
+            schematic.partsAdjacentTo(part.x, part.y).map { it.partNumber }
         }.filter {
             it.count() > 1
         }.sumOf { it.reduce { ratio, n -> ratio * n } }
