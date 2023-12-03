@@ -18,24 +18,24 @@ fun main() {
         fun partsAdjacentTo(x: Int, y: Int) = partNumbers.filter { partNumber -> partNumber.isAdjacentTo(x, y) }
     }
 
-    fun readLine(remaining: String, x: Int, y: Int, schematic: Schematic): Schematic =
+    fun readLine(schematic: Schematic, x: Int, y: Int, remaining: String): Schematic =
         when {
             remaining.isEmpty() -> schematic
             remaining.first() == '.' ->
                 remaining.dropWhile { it == '.' }.let { s ->
-                    readLine(s, x + remaining.length - s.length, y, schematic)
+                    readLine(schematic, x + remaining.length - s.length, y, s)
                 }
 
             remaining.first().isDigit() ->
                 remaining.takeWhile { it.isDigit() }.let { s ->
-                    readLine(remaining.drop(s.length), x + s.length, y, schematic.addNumber(x, y, s))
+                    readLine(schematic.addNumber(x, y, s), x + s.length, y, remaining.drop(s.length))
                 }
 
-            else -> readLine(remaining.drop(1), x + 1, y, schematic.addPart(x, y, remaining.first()))
+            else -> readLine(schematic.addPart(x, y, remaining.first()), x + 1, y, remaining.drop(1))
         }
 
     fun readSchematic(input: List<String>) = input.foldIndexed(Schematic()) { y, schematic, line ->
-        readLine(line, 0, y, schematic)
+        readLine(schematic, 0, y, line)
     }
 
     fun part1(input: List<String>) = readSchematic(input).let { schematic ->
