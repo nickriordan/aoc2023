@@ -1,10 +1,8 @@
 fun main() {
-    data class PartNumber(val xRange: IntRange, val yRange: IntRange, val partNumber: Int) {
-        fun isAdjacentTo(x: Int, y: Int) = x in xRange && y in yRange
-    }
+    data class Part(val x: Int, val y: Int, val symbol: Char)
 
-    data class Part(val x: Int, val y: Int, val symbol: Char) {
-        fun isGear() = symbol == '*'
+    data class PartNumber(val xRange: IntRange, val yRange: IntRange, val v: Int) {
+        fun isAdjacentTo(part: Part) = part.x in xRange && part.y in yRange
     }
 
     data class Schematic(val parts: List<Part> = emptyList(), val partNumbers: List<PartNumber> = emptyList()) {
@@ -13,43 +11,36 @@ fun main() {
 
         fun addPart(x: Int, y: Int, symbol: Char) = Schematic(parts + Part(x, y, symbol), partNumbers)
 
-        fun gears() = parts.filter { it.isGear() }
+        fun gears() = parts.filter { it.symbol == '*' }
+            .map { part -> numbersAdjacentTo(part) }
+            .filter { it.count() > 1 }
 
-        fun partsAdjacentTo(x: Int, y: Int) = partNumbers.filter { partNumber -> partNumber.isAdjacentTo(x, y) }
+        fun numbersAdjacentTo(part: Part) = partNumbers.filter { partNumber -> partNumber.isAdjacentTo(part) }
     }
 
-    fun readLine(schematic: Schematic, x: Int, y: Int, remaining: String): Schematic =
-        when {
-            remaining.isEmpty() -> schematic
-            remaining.first() == '.' ->
-                remaining.dropWhile { it == '.' }.let { s ->
-                    readLine(schematic, x + remaining.length - s.length, y, s)
-                }
-
-            remaining.first().isDigit() ->
-                remaining.takeWhile { it.isDigit() }.let { s ->
-                    readLine(schematic.addNumber(x, y, s), x + s.length, y, remaining.drop(s.length))
-                }
-
-            else -> readLine(schematic.addPart(x, y, remaining.first()), x + 1, y, remaining.drop(1))
-        }
-
     fun readSchematic(input: List<String>) = input.foldIndexed(Schematic()) { y, schematic, line ->
-        readLine(schematic, 0, y, line)
+        fun readLine(schematic: Schematic, remain: String): Schematic =
+            when {
+                remain.isEmpty() -> schematic
+                remain.first() == '.' -> readLine(schematic, remain.dropWhile { it == '.' })
+
+                remain.first().isDigit() ->
+                    remain.takeWhile { it.isDigit() }.let { s ->
+                        readLine(schematic.addNumber(line.length - remain.length, y, s), remain.drop(s.length))
+                    }
+
+                else -> readLine(schematic.addPart(line.length - remain.length, y, remain.first()), remain.drop(1))
+            }
+
+        readLine(schematic, line)
     }
 
     fun part1(input: List<String>) = readSchematic(input).let { schematic ->
-        schematic.partNumbers.filter { partNumber ->
-            schematic.parts.any { part -> partNumber.isAdjacentTo(part.x, part.y) }
-        }.sumOf { it.partNumber }
+        schematic.partNumbers.filter { num -> schematic.parts.any { part -> num.isAdjacentTo(part) } }.sumOf { it.v }
     }
 
     fun part2(input: List<String>) = readSchematic(input).let { schematic ->
-        schematic.gears().map { part ->
-            schematic.partsAdjacentTo(part.x, part.y).map { it.partNumber }
-        }.filter {
-            it.count() > 1
-        }.sumOf { it.reduce { ratio, n -> ratio * n } }
+        schematic.gears().sumOf { it.map { part -> part.v }.reduce { ratio, part -> ratio * part } }
     }
 
     val testInput = readInput("Day03_test")
