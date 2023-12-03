@@ -19,19 +19,13 @@ fun main() {
     }
 
     fun readSchematic(input: List<String>) = input.foldIndexed(Schematic()) { y, schematic, line ->
-        fun readLine(schematic: Schematic, remain: String): Schematic =
-            when {
-                remain.isEmpty() -> schematic
-                remain.first() == '.' -> readLine(schematic, remain.dropWhile { it == '.' })
-
-                remain.first().isDigit() ->
-                    remain.takeWhile { it.isDigit() }.let { s ->
-                        readLine(schematic.addNumber(line.length - remain.length, y, s), remain.drop(s.length))
-                    }
-
-                else -> readLine(schematic.addPart(line.length - remain.length, y, remain.first()), remain.drop(1))
-            }
-
+        fun readLine(schematic: Schematic, s: String): Schematic = s.dropWhile { it == '.' }.let { remain ->
+            remain.takeWhile { it.isDigit() }.takeIf { it.isNotEmpty() }?.let { s ->
+                readLine(schematic.addNumber(line.length - remain.length, y, s), remain.drop(s.length))
+            } ?: remain.elementAtOrNull(0)?.let { ch ->
+                readLine(schematic.addPart(line.length - remain.length, y, ch), remain.drop(1))
+            } ?: schematic
+        }
         readLine(schematic, line)
     }
 
