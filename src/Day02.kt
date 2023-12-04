@@ -1,29 +1,28 @@
 fun main() {
-    data class Turn(val red: Int, val green: Int, val blue: Int)
+    data class Turn(val r: Int, val g: Int, val b: Int)
     data class Game(val id: Int, val turns: List<Turn>)
 
-    fun extract(col: String, s: String) = s.substringBefore(col).trim().split(' ').last().toIntOrNull() ?: 0
+    fun String.cubes(colour: String) = substringBefore(colour).trim().split(' ').last().toIntOrNull() ?: 0
 
     fun gameData(input: List<String>) = input.map { line ->
-        line.split(':').let { (gameAndId, turnsInfo) ->
-            Game(id = gameAndId.drop(5).toInt(),
-                turns = turnsInfo.split(';').let { s ->
-                    s.map { Turn(extract("red", it), extract("green", it), extract("blue", it)) }
-                })
+        line.drop(5).split(':').let { (gameId, turns) ->
+            Game(gameId.toInt(), turns.split(';').run {
+                map { Turn(it.cubes("red"), it.cubes("green"), it.cubes("blue")) }
+            })
         }
     }
 
-    fun part1(input: List<String>) =
-        gameData(input).filter { g -> g.turns.all { it.red <= 12 && it.green <= 13 && it.blue <= 14 } }.sumOf { it.id }
+    fun part1(games: List<Game>) =
+        games.filter { game -> game.turns.all { it.r <= 12 && it.g <= 13 && it.b <= 14 } }.sumOf { it.id }
 
-    fun part2(input: List<String>) =
-        gameData(input).sumOf { g -> g.turns.maxOf { it.red } * g.turns.maxOf { it.green } * g.turns.maxOf { it.blue } }
+    fun part2(games: List<Game>) =
+        games.sumOf { game -> game.turns.run { maxOf { it.r } * maxOf { it.g } * maxOf { it.b } } }
 
-    val testInput = readInput("Day02_test")
-    check(part1(testInput) == 8)
-    check(part2(testInput) == 2286)
+    val testGames = gameData(readInput("Day02_test"))
+    check(part1(testGames) == 8)
+    check(part2(testGames) == 2286)
 
-    val input = readInput("Day02")
-    part1(input).println()
-    part2(input).println()
+    val games = gameData(readInput("Day02"))
+    part1(games).println()
+    part2(games).println()
 }
