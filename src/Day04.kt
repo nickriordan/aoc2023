@@ -9,7 +9,7 @@ fun main() {
         }
     }  // Map of Card id to count of correct for each card
 
-    fun part1(scores: Map<Int, Int>) = scores.values.sumOf { listOf(0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512)[it] }
+    fun part1(scores: Map<Int, Int>) = scores.values.sumOf { intArrayOf(0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512)[it] }
 
     fun part2(scores: Map<Int, Int>): Int {
         fun collect(id: Int): Int = (id + 1..min(id + scores[id]!!, scores.size)).sumOf { collect((it)) } + 1
