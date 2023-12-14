@@ -25,9 +25,9 @@ fun Any?.println() = println(this)
 /**
  * extract a list of ints from this string
  */
-fun String.parseInts() = this.trim().split(" ").map { it.toInt() }
+fun String.parseInts() = this.trim().split("\\s+".toRegex()).map { it.toInt() }
 
-fun String.parseLongs() = this.trim().split(" ").map { it.toLong() }
+fun String.parseLongs() = this.trim().split("\\s+".toRegex()).map { it.toLong() }
 
 fun LongRange.intersection(other: LongRange): LongRange {
     val first = max(this.first, other.first)
